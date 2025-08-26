@@ -1,10 +1,10 @@
 from redis_om import HashModel
-import main
+from db import db
 
-class product(HashModel):
+class Product(HashModel):
     name: str
-    prices: float
+    price: float
     quantity: int
     
     class Meta:
-        database = main.redis
+        database = db.redis
