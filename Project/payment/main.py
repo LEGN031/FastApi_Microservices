@@ -36,3 +36,16 @@ async def create(request : Request): #id, quantity
 def orderCompleted(order : Order):
     order.status = 'paid'
     order.save()
+
+@app.get('/orders')
+async def index():
+    if len(list(Order.all_pks())) > 0:
+        return [Order.get(pk) for pk in list(Order.all_pks())]
+    raise HTTPException(status_code=404, detail="No orders found")
+
+@app.get('/orders/{pk}')
+async def get(pk: str):
+    order = Order.get(pk)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order
