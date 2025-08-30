@@ -21,7 +21,7 @@ def byId(pk : str):
 def format(pk:str): 
     product = products.Product.get(pk) 
     return { 
-    "id" : product.pk, 
+    "id" : product.pk,
     "name" : product.name,
     "price" : product.price, 
      "quantity" : product.quantity } 

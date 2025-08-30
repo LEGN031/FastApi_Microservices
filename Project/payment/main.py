@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.background import BackgroundTasks
 from fastapi import HTTPException
 from starlette.requests import Request
-import requests
+import requests, time
 from models.Payments import Order
+from database.db import redis
 
 app = FastAPI()
 
@@ -15,7 +17,7 @@ app.add_middleware(
     )
 
 @app.post('/orders')
-async def create(request : Request): #id, quantity
+async def create(request : Request, background_task: BackgroundTasks): #id, quantity
     body = await request.json()
     req = requests.get('http://inventory:8000/products/%s' % body['id'])
     product = req.json()
@@ -30,12 +32,14 @@ async def create(request : Request): #id, quantity
     )
     order.save()
 
-    orderCompleted(order)
+    background_task.add_task(orderCompleted, order)
     return order
 
 def orderCompleted(order : Order):
+    time.sleep(5)
     order.status = 'paid'
     order.save()
+    redis.xadd('order_completed', order.model_dump(), '*')
 
 @app.get('/orders')
 async def index():
